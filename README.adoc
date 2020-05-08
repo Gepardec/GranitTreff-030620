@@ -18,7 +18,7 @@ This repository provides a sample application which is build in Jenkins to illus
 
 == Prerequisites
 
-The following environment variables needs to be defined for docker-compose. See the link:https://docs.docker.com/compose/environment-variables/#the-env_file-configuration-option[Docker Compose Doc] about the possibilities to set environment variables for Docker Compose.
+The following environment variables needs to be defined for docker-compose. The simplest way to provide them is to create a ``.env`` file in the ``./docker`` directory. 
 
 * ``DOCKER_HOST_URI`` +
   The Docker Host URI in the form of ``tcp://<HOST>:<HOST>``
@@ -28,6 +28,10 @@ The following environment variables needs to be defined for docker-compose. See 
   The port jenkins is running on 
 * ``JENKINS_ADMIN_PASSWORD``` +
   The password of the admin user
+* ``GITHUB_USERNAME``` +
+  Your github username
+* ``GITHUB_ACCESS_TOKEN``` +
+  Your github personal access token
 
 IMPORTANT: If you are on Windows host then the environment varibales to: + 
 ``DOCKER_HOST_URI=tcp://host.docker.internal:2375`` +

@@ -1,1 +1,6 @@
 .env
+*.iml
+target/
+.idea/
+app/.mvn/wrapper/*.jar
+app/.mvn/wrapper/*.java

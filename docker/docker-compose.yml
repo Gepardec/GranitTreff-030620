@@ -13,14 +13,20 @@ services:
         - "TZ=Europe/Vienna"
         # Plugin download could fail because of timeouts, so increase it
         - "CURL_CONNECTION_TIMEOUT=60"
+        # JAV_OPTS for Jenkins
+        - "JAVA_OPTS=-Djenkins.install.runSetupWizard=false -Djava.util.logging.config.file=/usr/share/jenkins/ref/logging.properties"
+        # Used by jenkins CASC and docker-compose.yml
         - "DOCKER_HOST_URI=${DOCKER_HOST_URI}"
         - "RUN_AS=${RUN_AS}"
         - "JENKINS_ADMIN_PASSWORD=${JENKINS_ADMIN_PASSWORD}"
-        - "JAVA_OPTS=-Djenkins.install.runSetupWizard=false -Djava.util.logging.config.file=/usr/share/jenkins/ref/logging.properties"
+        - "GITHUB_USERNAME=${GITHUB_USERNAME}"
+        - "GITHUB_ACCESS_TOKEN=${GITHUB_ACCESS_TOKEN}"
     volumes:
+        # The docker volume for persistence
         - jenkins-data:/var/jenkins_home
         # Map the config files in the container
         - ../jenkins-config/casc:/usr/share/jenkins/ref/config
+        # Map logging configuration in container
         - ../jenkins-config/logging.properties:/usr/share/jenkins/ref/logging.properties:ro
 volumes:
     jenkins-data:

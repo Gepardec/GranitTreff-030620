@@ -1,0 +1,37 @@
+jobs:
+    - script: >
+        multibranchPipelineJob('build') {
+            displayName('Build Pipeline')
+            factory {
+                workflowBranchProjectFactory {
+                  scriptPath('app/Jenkinsfile')
+                }
+            }
+            branchSources {
+                github {
+                    // The id option in the Git and GitHub branch source contexts is now mandatory (JENKINS-43693).
+                    id('mega-build') // IMPORTANT: use a constant and unique identifier
+                    checkoutCredentialsId('github-http')
+                    scanCredentialsId('github-http')
+                    repoOwner('Gepardec')
+                    repository('GranitTreff-030620')
+                    includes('develop feature/* hotfix/* release/*')
+                    buildOriginBranch(true)
+
+                    // Because of branch not found for PR
+                    buildForkPRHead(false)
+                    buildForkPRMerge(false)
+                    buildOriginBranchWithPR(false)
+                    buildOriginPRHead(false)
+                    buildOriginPRMerge(false)
+                }
+            }
+            orphanedItemStrategy {
+                discardOldItems {
+                    numToKeep(1)
+                }
+            }
+            triggers {
+                periodic(5)
+            }
+        }

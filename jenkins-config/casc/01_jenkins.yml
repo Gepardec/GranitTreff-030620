@@ -19,3 +19,13 @@ unclassified:
     location:
         url: "http://localhost:${JENKINS_PORT}"
         adminAddress: "Jenkins <jenkins@localhost>"
+credentials:
+    system:
+        domainCredentials:
+        - credentials:
+            - usernamePassword:
+                id: "github-http"
+                description: "github-http"
+                username: "${GITHUB_USERNAME}"
+                password: "${GITHUB_ACCESS_TOKEN}"
+                scope: GLOBAL
