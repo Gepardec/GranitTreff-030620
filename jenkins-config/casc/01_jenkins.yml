@@ -1,0 +1,21 @@
+jenkins:
+    numExecutors: 5
+    scmCheckoutRetryCount: 2
+    mode: NORMAL
+    securityRealm:
+        local:
+          allowsSignup: false
+          users:
+            - id: "admin"
+              password: "${JENKINS_ADMIN_PASSWORD}"
+    authorizationStrategy: loggedInUsersCanDoAnything
+    clouds:
+        - docker:
+            name: "docker"
+            dockerApi: 
+                dockerHost:
+                    uri: "${DOCKER_HOST_URI}"
+unclassified: 
+    location:
+        url: "http://localhost:${JENKINS_PORT}"
+        adminAddress: "Jenkins <jenkins@localhost>"

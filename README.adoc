@@ -1,0 +1,42 @@
+= Git in Software Development
+
+This repository holds the sample application for illustrating Git in Software Development.
+
+// TODO: Add presentation ro repository and link it here
+
+== Description
+
+This repository provides a sample application which is build in Jenkins to illustrate the relation of Git Branches, Versions and CI/CD. 
+
+== Technologies
+
+* link:https://git-scm.com/[Git 2.21.0.windows.1]
+* link:https://docs.docker.com/[Docker 19.03.8]
+* link:https://docs.docker.com/compose/[Docker Compose 1.25.4]
+
+== Resources
+
+== Prerequisites
+
+The following environment variables needs to be defined for docker-compose. See the link:https://docs.docker.com/compose/environment-variables/#the-env_file-configuration-option[Docker Compose Doc] about the possibilities to set environment variables for Docker Compose.
+
+* ``DOCKER_HOST_URI`` +
+  The Docker Host URI in the form of ``tcp://<HOST>:<HOST>``
+* ``RUN_AS`` +
+  Defines with which use the jenkins container shall run. Either ``root`` or ``jenkins``
+* ``JENKINS_PORT``` +
+  The port jenkins is running on 
+* ``JENKINS_ADMIN_PASSWORD``` +
+  The password of the admin user
+
+IMPORTANT: If you are on Windows host then the environment varibales to: + 
+``DOCKER_HOST_URI=tcp://host.docker.internal:2375`` +
+``RUN_AS=root``
+
+== Setup
+
+. Go to ``./docker/``
+. Execute ``docker-compose build``
+. Execute ``docker-compose up``
+. Go to ```http://localhost:${JENKINS_PORT}``
+. Login with ``admin:${JENKINS_ADMIN_PASSWORD}``

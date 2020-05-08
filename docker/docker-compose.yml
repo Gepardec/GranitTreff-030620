@@ -1,0 +1,26 @@
+version: '3.3'
+services:
+  jenkins:
+    build:
+        context: ./jenkins
+        args:
+          VERSION: "2.235-slim"        
+          # WINDOWS ONLY, we need to run root otherwise we cannot access 'host.docker.internal'
+          RUN_AS: "root"
+    ports:
+        - "${JENKINS_PORT}:8080"
+    environment:
+        - "TZ=Europe/Vienna"
+        # Plugin download could fail because of timeouts, so increase it
+        - "CURL_CONNECTION_TIMEOUT=60"
+        - "DOCKER_HOST_URI=${DOCKER_HOST_URI}"
+        - "RUN_AS=${RUN_AS}"
+        - "JENKINS_ADMIN_PASSWORD=${JENKINS_ADMIN_PASSWORD}"
+        - "JAVA_OPTS=-Djenkins.install.runSetupWizard=false -Djava.util.logging.config.file=/usr/share/jenkins/ref/logging.properties"
+    volumes:
+        - jenkins-data:/var/jenkins_home
+        # Map the config files in the container
+        - ../jenkins-config/casc:/usr/share/jenkins/ref/config
+        - ../jenkins-config/logging.properties:/usr/share/jenkins/ref/logging.properties:ro
+volumes:
+    jenkins-data:
