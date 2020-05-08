@@ -10,7 +10,9 @@ USER root
 
 ADD plugins.txt /usr/share/jenkins/ref/
 
-RUN mkdir -p /usr/share/jenkins/ref/config \
+RUN apt-get update \
+    && apt-get install -y docker.io \
+    && mkdir -p /usr/share/jenkins/ref/config \
     && chown -R jenkins:jenkins /usr/share/jenkins/ref
 
 USER ${RUN_AS}

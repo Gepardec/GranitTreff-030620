@@ -18,24 +18,33 @@ This repository provides a sample application which is build in Jenkins to illus
 
 == Prerequisites
 
+You need to expose the Docker Daemon via tcp (unprotected). +  
 The following environment variables needs to be defined for docker-compose. The simplest way to provide them is to create a ``.env`` file in the ``./docker`` directory. 
 
 * ``DOCKER_HOST_URI`` +
-  The Docker Host URI in the form of ``tcp://<HOST>:<HOST>``
+  The Docker Host URI in the form of ``tcp://<HOST>:<PORT>``
 * ``RUN_AS`` +
   Defines with which use the jenkins container shall run. Either ``root`` or ``jenkins``
-* ``JENKINS_PORT``` +
+* ``JENKINS_PORT`` +
   The port jenkins is running on 
 * ``JENKINS_ADMIN_PASSWORD``` +
   The password of the admin user
-* ``GITHUB_USERNAME``` +
+* ``GITHUB_USERNAME`` +
   Your github username
-* ``GITHUB_ACCESS_TOKEN``` +
+* ``GITHUB_ACCESS_TOKEN`` +
   Your github personal access token
+* ``JNLP_JENKIS_URL`` +
+  The Jenkins URL used by the jnlp docker agent
 
-IMPORTANT: If you are on Windows host then the environment varibales to: + 
+IMPORTANT: With Docker for Windows set the environment varibales to: + 
 ``DOCKER_HOST_URI=tcp://host.docker.internal:2375`` +
-``RUN_AS=root``
+``RUN_AS=root`` +
+``JNLP_JENKIS_URL=http://host.docker.internal:50000`` +
+With a native Linux host set the environment varibales to: + 
+``DOCKER_HOST_URI=tcp://<DOCKER0_IP>:2375`` +
+``RUN_AS=jenkins`` +
+``JNLP_JENKIS_URL=http://<DOCKER0_IP>:50000`` + 
+See link:https://stackoverflow.com/questions/31324981/how-to-access-host-port-from-docker-container[here] why
 
 == Setup
 

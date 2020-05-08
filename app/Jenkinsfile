@@ -16,25 +16,31 @@ pipeline {
         stage("Prepare") {
             steps {
                 script {
-                    echo "${REVISION}"
+                    sh "mkdir -p ${WORKSPACE}/build-result"
+                    echo "Revision: ${REVISION}"
                 }
             }
         }
 
-        stage("Build") {
+        stage("Build Artifact") {
+            agent {
+                node {
+                    label 'docker-agent'
+                }
+            }
             steps {
                 script {
-                    echo "here we build the app"
+                    dir('app') {
+                       sh 'ls -lrta'
+                    }
                 }
             }
         }
+    }
 
-        stage("Deploy") {
-            steps {
-                script {
-                    echo "here we deploy the app"
-                }
-            }
+    post {
+        always {
+            sh "rm -rf ${WORKSPACE}/build-result"
         }
     }
 }
