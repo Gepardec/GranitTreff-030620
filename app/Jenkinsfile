@@ -39,26 +39,24 @@ pipeline {
     }
 }
 
-def SNAPSHOT_SUFFIX = "-SNAPSHOT"
-def RC_SUFFIX = "-RC${BUILD_NUMBER}"
-
 def replaceCharacterForRevision(String branch = "") {
     return branch.replace("/", "-")
                  .replace("_", "-")
 }
 
 def buildRevisionForBranch(String pomLocation = "./") {
+    def SNAPSHOT_SUFFIX = "-SNAPSHOT"
     def branch = "${env.GIT_BRANCH}".trim().toLowerCase()
     if ("develop" == branch) {
         pom = readMavenPom file: pomLocation + 'pom.xml'
         return pom.properties['revision'] + SNAPSHOT_SUFFIX
     } else if (branch.startsWith("feature/")) {
-        return replaceCharacterForRevision(branch).toUpperCase()
+        return replaceCharacterForRevision(branch).toUpperCase() + SNAPSHOT_SUFFIX
     } else if (branch.startsWith("PR-")) {
-        return replaceCharacterForRevision(branch).toUpperCase()
+        return replaceCharacterForRevision(branch).toUpperCase() + SNAPSHOT_SUFFIX
     } else if (branch.startsWith("release/") || branch.startsWith("hotfix/")) {
         pom = readMavenPom file: pomLocation + 'pom.xml'
-        return pom.properties['revision'] + RC_SUFFIX
+        return pom.properties['revision'] + "-RC${BUILD_NUMBER}"
     } else {
         error("Branch not detected. branch=${branch}")
     }
