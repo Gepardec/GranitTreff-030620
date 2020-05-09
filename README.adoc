@@ -18,7 +18,11 @@ This repository provides a sample application which is build in Jenkins to illus
 
 == Prerequisites
 
-You need to expose the Docker Daemon via tcp (unprotected). +  
+Make sure you have configured Docker for Windows
+
+* to be exposed on port ``2375``
+* and that your drive is shared.
+
 The following environment variables needs to be defined for docker-compose. The simplest way to provide them is to create a ``.env`` file in the ``./docker`` directory. 
 
 * ``DOCKER_HOST_URI`` +
@@ -30,27 +34,28 @@ The following environment variables needs to be defined for docker-compose. The 
 * ``RUN_AS`` +
   Defines with which use the jenkins container shall run. Either ``root`` or ``jenkins``
 * ``JENKINS_PORT`` +
-  The port jenkins is running on 
+  The port Jenkins is exposed to
 * ``JENKINS_ADMIN_PASSWORD``` +
   The password of the admin user
 * ``GITHUB_USERNAME`` +
   Your github username
 * ``GITHUB_ACCESS_TOKEN`` +
   Your github personal access token
+* ``NEXUS_PORT`` +
+  the port Nexus shall be exposed to
 * ``NEXUS_PASSWORD`` +
-  The nexus admin password, which is available after the first start +
-  Execute ``docker-compose exec neuxs cat /opt/sonatype/sonatype-work/nexus3/admin.password`` to get the password
+  The nexus admin password used to release artifacts. *Note, first you need to login and change the initial generated password*
 
 IMPORTANT: With Docker for Windows set the environment varibales to: + 
 ``DOCKER_HOST_URI=tcp://host.docker.internal:2375`` +
 ``RUN_AS=root`` +
-``JNLP_JENKIS_URL=http://host.docker.internal:50000`` +
-``JNLP_NEXUS_URL=http://host.docker.internal:9081`` +
+``JNLP_JENKIS_URL=http://host.docker.internal:<JENKINS_PORT>`` +
+``JNLP_NEXUS_URL=http://host.docker.internal:<NEXUS_PORT>`` +
 With a native Linux host set the environment varibales to: + 
 ``DOCKER_HOST_URI=tcp://<DOCKER0_IP>:2375`` +
 ``RUN_AS=jenkins`` +
-``JNLP_JENKIS_URL=http://<DOCKER0_IP>:50000`` + 
-``JNLP_NEXUS_URL=http://<DOCKER0_IP>:9081`` +
+``JNLP_JENKIS_URL=http://<DOCKER0_IP>:<JENKINS_PORT>`` + 
+``JNLP_NEXUS_URL=http://<DOCKER0_IP>:<NEXUS_PORT>`` +
 See link:https://stackoverflow.com/questions/31324981/how-to-access-host-port-from-docker-container[here] why +
 
 == Setup
@@ -58,5 +63,14 @@ See link:https://stackoverflow.com/questions/31324981/how-to-access-host-port-fr
 . Go to ``./docker/``
 . Execute ``docker-compose build``
 . Execute ``docker-compose up``
-. Go to ```http://localhost:${JENKINS_PORT}``
-. Login with ``admin:${JENKINS_ADMIN_PASSWORD}``
+. Execute ``docker-compose exec nexus cat /opt/sonatype/sonatype-work/nexus3/admin.password`` to get the generated admin password
+. Go to ``http://localhost:<NEXUS_PORT>``
+. Login with ``admin:<INITIAL_PASSWORD>``
+. Follow the wizard and define the new admin password ``NEXUS_PASSWORD``
+. Go to ``http://localhost:<JENKINS_PORT>``
+. Login with ``admin:<JENKINS_ADMIN_PASSWORD>``
+. Got to the build job and see how they went
+. Go to ``http://localhost:<NEXUS_PORT>/#browse/browse:maven-snapshots`` and see the pushed artifacts, which have a different version depending on the branch they have been build from
+
+IMPORTANT: The first time your defined ``NEXUS_PASSWORD`` was most likely invalid,
+           because you haven't changed it before the builds started. Just trigger all of the builds and it will work 
