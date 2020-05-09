@@ -23,6 +23,10 @@ The following environment variables needs to be defined for docker-compose. The 
 
 * ``DOCKER_HOST_URI`` +
   The Docker Host URI in the form of ``tcp://<HOST>:<PORT>``
+* ``JNLP_JENKIS_URL`` +
+  The Jenkins URL used by the jnlp docker agent
+* ``JNLP_NEXUS_URL`` +
+  The Nexus URL used by the builds within a jnlp docker agent
 * ``RUN_AS`` +
   Defines with which use the jenkins container shall run. Either ``root`` or ``jenkins``
 * ``JENKINS_PORT`` +
@@ -33,18 +37,21 @@ The following environment variables needs to be defined for docker-compose. The 
   Your github username
 * ``GITHUB_ACCESS_TOKEN`` +
   Your github personal access token
-* ``JNLP_JENKIS_URL`` +
-  The Jenkins URL used by the jnlp docker agent
+* ``NEXUS_PASSWORD`` +
+  The nexus admin password, which is available after the first start +
+  Execute ``docker-compose exec neuxs cat /opt/sonatype/sonatype-work/nexus3/admin.password`` to get the password
 
 IMPORTANT: With Docker for Windows set the environment varibales to: + 
 ``DOCKER_HOST_URI=tcp://host.docker.internal:2375`` +
 ``RUN_AS=root`` +
 ``JNLP_JENKIS_URL=http://host.docker.internal:50000`` +
+``JNLP_NEXUS_URL=http://host.docker.internal:9081`` +
 With a native Linux host set the environment varibales to: + 
 ``DOCKER_HOST_URI=tcp://<DOCKER0_IP>:2375`` +
 ``RUN_AS=jenkins`` +
 ``JNLP_JENKIS_URL=http://<DOCKER0_IP>:50000`` + 
-See link:https://stackoverflow.com/questions/31324981/how-to-access-host-port-from-docker-container[here] why
+``JNLP_NEXUS_URL=http://<DOCKER0_IP>:9081`` +
+See link:https://stackoverflow.com/questions/31324981/how-to-access-host-port-from-docker-container[here] why +
 
 == Setup
 

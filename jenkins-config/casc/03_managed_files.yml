@@ -1,0 +1,57 @@
+unclassified: 
+    globalConfigFiles:
+      configs:
+        - xml:
+            id: maven-settings
+            name: maven-settings
+            comment: Maven settings file
+            content: |
+              <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+                                https://maven.apache.org/xsd/settings-1.0.0.xsd">                 
+                  <profiles>
+                      <profile>
+                          <id>default</id>
+                          <properties>
+                            <altSnapshotDeploymentRepository>nexus::${JNLP_NEXUS_URL}/repository/maven-snapshots</altSnapshotDeploymentRepository>
+                            <altReleaseDeploymentRepository>nexus::${JNLP_NEXUS_URL}/repository/maven-releases</altReleaseDeploymentRepository>
+                          </properties>
+                          <repositories>
+                              <repository>
+                                  <id>central</id><url>http://</url>
+                              </repository>
+                          </repositories>
+                          <pluginRepositories>
+                              <pluginRepository>
+                                  <id>central</id><url>http://</url>
+                              </pluginRepository>
+                          </pluginRepositories>
+                      </profile>
+                  </profiles>  
+                  
+                  <activeProfiles>
+                    <activeProfile>default</activeProfile>
+                  </activeProfiles>
+
+                  <mirrors>
+                      <mirror>
+                          <id>mirror</id>
+                          <url>${JNLP_NEXUS_URL}/repository/maven-public</url>
+                          <mirrorOf>*</mirrorOf>
+                      </mirror>
+                  </mirrors>
+              
+                  <servers>
+                      <server>
+                          <id>mirror</id>
+                          <username>${NEXUS_USER}</username>
+                          <password>${NEXUS_PASSWORD}</password>
+                      </server>
+                      <server>
+                          <id>nexus</id>
+                          <username>${NEXUS_USER}</username>
+                          <password>${NEXUS_PASSWORD}</password>
+                      </server>
+                  </servers>
+              </settings>

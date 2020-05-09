@@ -1,7 +1,16 @@
 #!groovy
 
 pipeline {
-    agent any
+    agent {
+        node {
+            label 'docker-agent'
+        }
+    }
+
+    tools {
+        jdk 'openjdk-11'
+        maven 'maven-3.6.3'
+    }
 
     environment {
         REVISION = buildRevisionForBranch("app/")
@@ -23,31 +32,22 @@ pipeline {
         }
 
         stage("Build Artifact") {
-            agent {
-                node {
-                    label 'docker-agent'
-                }
-            }
             steps {
                 script {
                     dir('app') {
-                       sh 'ls -lrta'
+                        configFileProvider([configFile(fileId: 'maven-settings', variable: 'MAVEN_SETTINGS')]) {
+                            sh "mvn -s ${MAVEN_SETTINGS} -B clean install deploy -Drevision=${REVISION}"
+                        }
                     }
                 }
             }
         }
     }
-
-    post {
-        always {
-            sh "rm -rf ${WORKSPACE}/build-result"
-        }
-    }
 }
 
-def replaceCharacterForRevision(String branch = "") {
+static def replaceCharacterForRevision(String branch = "") {
     return branch.replace("/", "-")
-                 .replace("_", "-")
+            .replace("_", "-")
 }
 
 def buildRevisionForBranch(String pomLocation = "./") {

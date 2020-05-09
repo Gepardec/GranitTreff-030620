@@ -1,0 +1,23 @@
+tool:
+    git:
+      installations:
+        - name: "Default"
+          home: "git"
+    jdk:
+      installations:
+        - name: "openjdk-11"
+          properties:
+            - installSource:
+                installers:
+                    - zip:
+                        subdir: "jdk-11"
+                        url: "https://download.java.net/openjdk/jdk11/ri/openjdk-11+28_linux-x64_bin.tar.gz"
+    maven:
+      installations:
+        - name: "maven-3.6.3"
+          properties:
+            - installSource:
+                installers:
+                  - zip:
+                      subdir: "apache-maven-3.6.3"
+                      url: "https://mirror.klaus-uwe.me/apache/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz"

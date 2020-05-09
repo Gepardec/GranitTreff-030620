@@ -32,6 +32,10 @@ jenkins:
                   dockerTemplateBase:
                         image: "jenkins/inbound-agent:4.3-4-jdk11"
                         user: "root"
+                        volumes:
+                            - "maven-repo:/root/.m2/repository:rw"
+                            - "jenkins-tools:/home/jenkins/tools:rw"
+                        volumesString: "maven-repo:/root/.m2/repository:rw jenkins-tools:/home/jenkins/tools:rw"
                   instanceCapStr: "5"
                   labelString: "docker-agent"
                   mode: EXCLUSIVE

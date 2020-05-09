@@ -21,9 +21,9 @@ jobs:
                     // Because of branch not found for PR
                     buildForkPRHead(false)
                     buildForkPRMerge(false)
-                    buildOriginBranchWithPR(false)
-                    buildOriginPRHead(false)
-                    buildOriginPRMerge(false)
+                    buildOriginBranchWithPR(true)
+                    buildOriginPRHead(true)
+                    buildOriginPRMerge(true)
                 }
             }
             orphanedItemStrategy {

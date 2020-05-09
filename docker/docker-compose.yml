@@ -1,37 +1,49 @@
 version: '3.3'
 services:
-  jenkins:
-    build:
-        context: ./jenkins
-        args:
-          VERSION: "2.235-slim"        
-          # WINDOWS ONLY, we need to run root otherwise we cannot access 'host.docker.internal'
-          RUN_AS: "root"
-    ports:
-        # The jenkins web app
-        - "${JENKINS_PORT}:8080"
-        # The jenkins jnlp agent listener
-        - "50000:50000"
-    environment:
-        - "TZ=Europe/Vienna"
-        # Plugin download could fail because of timeouts, so increase it
-        - "CURL_CONNECTION_TIMEOUT=60"
-        # JAV_OPTS for Jenkins
-        - "JAVA_OPTS=-Djenkins.install.runSetupWizard=false -Djava.util.logging.config.file=/usr/share/jenkins/ref/logging.properties"
-        # Used by jenkins CASC and docker-compose.yml
-        - "DOCKER_HOST=${DOCKER_HOST_URI}"
-        - "JNLP_JENKIS_URL=${JNLP_JENKIS_URL}"
-        - "RUN_AS=${RUN_AS}"
-        - "JENKINS_ADMIN_PASSWORD=${JENKINS_ADMIN_PASSWORD}"
-        - "GITHUB_USERNAME=${GITHUB_USERNAME}"
-        - "GITHUB_ACCESS_TOKEN=${GITHUB_ACCESS_TOKEN}"
-    volumes:
-        # The docker volume for persistence
-        - jenkins-data:/var/jenkins_home
-        # Map the config files in the container
-        - ../jenkins-config/casc:/usr/share/jenkins/ref/config
-        # Map logging configuration in container
-        - ../jenkins-config/logging.properties:/usr/share/jenkins/ref/logging.properties:ro
-    privileged: true
+    jenkins:    
+        build:
+            context: ./jenkins
+            args:
+                VERSION: "2.235-slim"        
+                # WINDOWS ONLY, we need to run root otherwise we cannot access 'host.docker.internal'
+                RUN_AS: "root"
+        ports:
+            # The jenkins web app
+            - "${JENKINS_PORT}:8080"
+            # The jenkins jnlp agent listener
+            - "50000:50000"
+        environment:
+            - "TZ=Europe/Vienna"
+            # Plugin download could fail because of timeouts, so increase it
+            - "CURL_CONNECTION_TIMEOUT=60"
+            # JAV_OPTS for Jenkins
+            - "JAVA_OPTS=-Djenkins.install.runSetupWizard=false -Djava.util.logging.config.file=/usr/share/jenkins/ref/logging.properties"
+            # Used by jenkins CASC and docker-compose.yml
+            - "DOCKER_HOST=${DOCKER_HOST_URI}"
+            - "JNLP_JENKIS_URL=${JNLP_JENKIS_URL}"
+            - "JNLP_NEXUS_URL=${JNLP_NEXUS_URL}"
+            - "RUN_AS=${RUN_AS}"
+            - "JENKINS_ADMIN_PASSWORD=${JENKINS_ADMIN_PASSWORD}"
+            - "GITHUB_USERNAME=${GITHUB_USERNAME}"
+            - "GITHUB_ACCESS_TOKEN=${GITHUB_ACCESS_TOKEN}"
+            - "NEXUS_USER=admin"
+            - "NEXUS_PASSWORD=${ADMIN_NEXUS_PASSWORD}"
+        volumes:
+            # The docker volume for persistence
+            - jenkins-data:/var/jenkins_home
+            # Map the config files in the container
+            - ../jenkins-config/casc:/usr/share/jenkins/ref/config
+            # Map logging configuration in container
+            - ../jenkins-config/logging.properties:/usr/share/jenkins/ref/logging.properties:ro
+        privileged: true
+    nexus:
+        image: "sonatype/nexus3:3.23.0"
+        ports:
+            - "9081:8081"
+        environment:
+            - "INSTALL4J_ADD_VM_PARAMS=-Xms2g -Xmx2g -XX:MaxDirectMemorySize=2g"
+        volumes:
+            - "nexus-data:/nexus-data"
 volumes:
     jenkins-data:
+    nexus-data:
