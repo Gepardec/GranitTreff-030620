@@ -38,8 +38,6 @@ services:
             - ../jenkins-config/casc:/usr/share/jenkins/ref/config
             # Map logging configuration in container
             - ../jenkins-config/logging.properties:/usr/share/jenkins/ref/logging.properties:ro
-            # Map kubernetes configuration in container
-            - ../jenkins-config/kube-config.yml:/usr/share/jenkins/ref/kube-config.yml:ro
         privileged: true
         # Inject defined and used secrets
         secrets:
