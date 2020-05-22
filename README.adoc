@@ -14,14 +14,49 @@ This repository provides a sample application which is build in Jenkins to illus
 * link:https://docs.docker.com/[Docker 19.03.8]
 * link:https://docs.docker.com/compose/[Docker Compose 1.25.4]
 
-== Resources
+== Description
+
+This repository holds the sample application and infrastructure used for illustrating the relation of Git Branches, Versions and CI/CD in action. The infrastructure consists of the following services and platforms.
+
+* Docker
+* Kubernetes
+* Jenkins CI/CD
+* Jenkins Docker JNLP Agent
+* Nexus Repsoitory Manager
+
+.Infrastructure
+image::./doc/infra.png[Infrastructure]
 
 == Prerequisites
 
-Make sure you have configured Docker for Windows
+=== Docker
+
+Make sure you have configured Docker
 
 * to be exposed on port ``2375``
-* and that your drive is shared.
+* and that your drive is shared (Docker for Windows only).
+
+=== Jenkins Agent
+
+You need to build the jenkins agent image ``agent/Dockerfile`` which is based on ``jenkins/inbound-agent`` and installs Docker CLI and the Kubernetes CLI.
+
+=== Docker Compose 
+
+==== Docker Secrets
+
+Create the following secret files which are used in the ``docker/docker-compose.yml`` file. The content of the files is the secret value.
+
+* ``docker/secrets/kubeConfig.txt`` +
+  The base64 encoded kubernetes config file
+* ``docker/secrets/nexusPassword.txt`` +
+  The nexus password *Note, first you need to login and change the initial generated password*
+* ``docker/secrets/dockerHubPassword.txt`` +
+  The nexus administrator password
+* ``docker/secrets/githubAccessToken.txt`` +
+  The github user access token
+* ``docker/secrets/jenkinsAdminPassword.txt``
+
+==== Env File 
 
 The following environment variables needs to be defined for docker-compose. The simplest way to provide them is to create a ``.env`` file in the ``./docker`` directory. 
 
@@ -35,28 +70,48 @@ The following environment variables needs to be defined for docker-compose. The 
   Defines with which use the jenkins container shall run. Either ``root`` or ``jenkins``
 * ``JENKINS_PORT`` +
   The port Jenkins is exposed to
-* ``JENKINS_ADMIN_PASSWORD``` +
-  The password of the admin user
 * ``GITHUB_USERNAME`` +
   Your github username
-* ``GITHUB_ACCESS_TOKEN`` +
-  Your github personal access token
 * ``NEXUS_PORT`` +
   the port Nexus shall be exposed to
-* ``NEXUS_PASSWORD`` +
-  The nexus admin password used to release artifacts. *Note, first you need to login and change the initial generated password*
+* ``DOCKER_HUB_REGISTRY_REPOSITORY`` +
+  The docker hub repository name
+* ``DOCKER_HUB_USERNAME`` +
+  The docker hub username
+* ``KUBERNETES_URL`` +
+  The api url of your kubernetes cluster
+* ``JENKINS_AGENT_IMAGE_TAG`` +
+  The Docker Image Tag for the build ``agent/Dockerfile`` custom Jenkins agent image
 
 IMPORTANT: With Docker for Windows set the environment varibales to: + 
-``DOCKER_HOST_URI=tcp://host.docker.internal:2375`` +
+``DOCKER_HOST_URI=tcp://hKUBERNETES_URLost.docker.internal:2375`` +
 ``RUN_AS=root`` +
 ``JNLP_JENKIS_URL=http://host.docker.internal:<JENKINS_PORT>`` +
 ``JNLP_NEXUS_URL=http://host.docker.internal:<NEXUS_PORT>`` +
+``KUBERNETES_URL=https://kubernetes.docker.internal:6443`` +
 With a native Linux host set the environment varibales to: + 
 ``DOCKER_HOST_URI=tcp://<DOCKER0_IP>:2375`` +
 ``RUN_AS=jenkins`` +
 ``JNLP_JENKIS_URL=http://<DOCKER0_IP>:<JENKINS_PORT>`` + 
 ``JNLP_NEXUS_URL=http://<DOCKER0_IP>:<NEXUS_PORT>`` +
+``KUBERNETES_URL=https://<KUBERNETES_API_URL>:<KUBERNETES_API_PORT>`` +
 See link:https://stackoverflow.com/questions/31324981/how-to-access-host-port-from-docker-container[here] why +
+
+=== Kubernetes
+
+Ensure that you have an Kubernetes Cluster and a Kubernetes config file, which allows Jenkins to access the Kubernetes Cluster.  
+
+==== Kubernetes Dashboard (Optional)
+
+. Install the dashboard +
+  ``kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.1/aio/deploy/recommended.yaml``
+. Start the ``kube-proxy`` +
+  ``kubectl proxy``
+. List the secrets in the ``kubernetes-dashbaord`` namespace +
+  ``kubectl get secret -n kubernetes-dashboard``
+. Get the secret token from the service account name like ``kubernetes-dashboard-token-xxxxx`` + 
+  `` kubectl describe secret kubernetes-dashboard-token-xxxxx  -n kubernetes-dashboard``
+. Go to ``localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/`` and login with the retrieved token
 
 == Setup
 

@@ -1,10 +1,16 @@
 unclassified: 
     globalConfigFiles:
       configs:
-        - xml:
-            id: maven-settings
-            name: maven-settings
-            comment: Maven settings file
+        - mavenSettings:
+            id: "maven-settings"
+            comment: "maven-settings"
+            isReplaceAll: true
+            name: "maven-settings"
+            serverCredentialMappings:
+              - credentialsId: "nexus-repository"
+                serverId: "nexus"
+              - credentialsId: "nexus-repository"
+                serverId: "mirror"
             content: |
               <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -41,17 +47,4 @@ unclassified:
                           <mirrorOf>*</mirrorOf>
                       </mirror>
                   </mirrors>
-              
-                  <servers>
-                      <server>
-                          <id>mirror</id>
-                          <username>${NEXUS_USER}</username>
-                          <password>${NEXUS_PASSWORD}</password>
-                      </server>
-                      <server>
-                          <id>nexus</id>
-                          <username>${NEXUS_USER}</username>
-                          <password>${NEXUS_PASSWORD}</password>
-                      </server>
-                  </servers>
               </settings>

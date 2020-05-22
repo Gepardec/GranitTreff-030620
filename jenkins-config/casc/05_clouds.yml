@@ -1,21 +1,8 @@
 jenkins:
-    agentProtocols:
-        - "JNLP4-connect"
-        - "Ping"
-    slaveAgentPort: 50000
-    numExecutors: 5
-    scmCheckoutRetryCount: 2
-    mode: NORMAL
-    securityRealm:
-        local:
-          allowsSignup: false
-          users:
-            - id: "admin"
-              password: "${JENKINS_ADMIN_PASSWORD}"
-    authorizationStrategy: loggedInUsersCanDoAnything
     clouds:
         - docker:
             name: "docker"
+            exposeDockerHost: true
             dockerApi: 
                 dockerHost:
                     uri: "${DOCKER_HOST}"
@@ -30,7 +17,7 @@ jenkins:
                                 failIfWorkDirIsMissing: false
                                 internalDir: "remoting"
                   dockerTemplateBase:
-                        image: "jenkins/inbound-agent:4.3-4-jdk11"
+                        image: "${JENKINS_AGENT_IMAGE_TAG}"
                         user: "root"
                         volumes:
                             - "maven-repo:/root/.m2/repository:rw"
@@ -42,17 +29,10 @@ jenkins:
                   name: "docker-agent"
                   pullTimeout: 300
                   remoteFs: "/home/jenkins"
-unclassified: 
-    location:
-        url: "http://localhost:${JENKINS_PORT}"
-        adminAddress: "Jenkins <jenkins@localhost>"
-credentials:
-    system:
-        domainCredentials:
-        - credentials:
-            - usernamePassword:
-                id: "github-http"
-                description: "github-http"
-                username: "${GITHUB_USERNAME}"
-                password: "${GITHUB_ACCESS_TOKEN}"
-                scope: GLOBAL
+                  nodeProperties:
+                    - envVars:
+                        env:
+                        - key: "DOCKER_HUB_REGISTRY_REPOSITORY"
+                          value: "${DOCKER_HUB_REGISTRY_REPOSITORY}"
+                        - key: "KUBERNETES_URL"
+                          value: "${KUBERNETES_URL}"

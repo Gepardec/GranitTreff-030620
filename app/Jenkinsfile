@@ -22,22 +22,71 @@ pipeline {
     }
 
     stages {
-        stage("Prepare") {
-            steps {
-                script {
-                    sh "mkdir -p ${WORKSPACE}/build-result"
-                    echo "Revision: ${REVISION}"
-                }
-            }
-        }
-
         stage("Build Artifact") {
             steps {
                 script {
                     dir('app') {
+                        // If we package or install here, then deploy plugin tries to upload artifact twice, which fails on release repository
                         configFileProvider([configFile(fileId: 'maven-settings', variable: 'MAVEN_SETTINGS')]) {
-                            sh "mvn -s ${MAVEN_SETTINGS} -B clean install deploy -Drevision=${REVISION}"
+                            sh "mvn -s ${MAVEN_SETTINGS} -B clean compile test -Drevision=${env.REVISION}"
                         }
+                    }
+                }
+            }
+        }
+
+        stage("Release Artifact") {
+            steps {
+                script {
+                    dir('app') {
+                        configFileProvider([configFile(fileId: 'maven-settings', variable: 'MAVEN_SETTINGS')]) {
+                            sh "mvn -s ${MAVEN_SETTINGS} -B deploy -Drevision=${env.REVISION}"
+                        }
+                    }
+                }
+            }
+        }
+
+        stage("Build/Push Image") {
+            steps {
+                script {
+                    pom = readMavenPom file: 'app/pom.xml'
+                    sh 'cp -f app/target/*-runner.jar app/docker/app.jar'
+                    dir('app/docker') {
+                        docker.withRegistry("https://registry.hub.docker.com", 'docker-hub') {
+                            def customImage = docker.build("${env.DOCKER_HUB_REGISTRY_REPOSITORY}/${pom.artifactId}:${env.REVISION}",
+                                                           "--build-arg GIT_BRANCH=${env.GIT_BRANCH} \
+                                                            --build-arg GIT_COMMIT=${env.GIT_COMMIT} \
+                                                            --build-arg VERSION=${env.REVISION} \
+                                                            --build-arg BUILD_TIMESTAMP=${env.BUILD_TIMESTAMP} \
+                                                            . ")
+                            customImage.push()
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Deploy Kubernetes') {
+            steps {
+                script {
+                    pom = readMavenPom file: 'app/pom.xml'
+                    def kubeName = "${pom.artifactId}-${REVISION}".replace(".", "-").toLowerCase()
+                    def imageTag = "registry.hub.docker.com/${env.DOCKER_HUB_REGISTRY_REPOSITORY}/${pom.artifactId}:${env.REVISION}"
+                    sh "sed -i -e 's|\${NAME}|${kubeName}|g' \
+                               -e 's|\${IMAGE_TAG}|${imageTag}|g' \
+                               -e 's|\${GIT_COMMIT}|${env.GIT_COMMIT}|g' \
+                               -e 's|\${GIT_BRANCH}|${env.GIT_BRANCH}|g' \
+                               -e 's|\${VERSION}|${env.REVISION}|g' \
+                               -e 's|\${BUILD_TIMESTAMP}|${env.BUILD_TIMESTAMP}|g' \
+                            app/kubernetes/deployment.yml"
+                    sh "sed -i -e 's|\${NAME}|${kubeName}|g' \
+                            app/kubernetes/service.yml"
+                    withKubeConfig([credentialsId: 'kubernetes-config-file', serverUrl: "${KUBERNETES_URL}"]) {
+                        catchError(message: "Could not delete kubernetes resource. Properly they don'T exist yet", buildResult: 'SUCCESS', stageResult: 'SUCCESS') {
+                            sh 'kubectl delete -f app/kubernetes'
+                        }
+                        sh 'kubectl apply -f app/kubernetes'
                     }
                 }
             }
@@ -45,7 +94,8 @@ pipeline {
     }
 }
 
-static def replaceCharacterForRevision(String branch = "") {
+static def
+replaceCharacterForRevision(String branch = "") {
     return branch.replace("/", "-")
             .replace("_", "-")
 }
@@ -62,7 +112,7 @@ def buildRevisionForBranch(String pomLocation = "./") {
         return replaceCharacterForRevision(branch).toUpperCase() + SNAPSHOT_SUFFIX
     } else if (branch.startsWith("release/") || branch.startsWith("hotfix/")) {
         pom = readMavenPom file: pomLocation + 'pom.xml'
-        return pom.properties['revision'] + "-RC${BUILD_NUMBER}"
+        return pom.properties['revision'] + "-RC${env.BUILD_NUMBER}"
     } else {
         error("Branch not detected. branch=${branch}")
     }

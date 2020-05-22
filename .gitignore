@@ -1,6 +1,8 @@
 .env
+kube-config.yml
 *.iml
 target/
 .idea/
 app/.mvn/wrapper/*.jar
 app/.mvn/wrapper/*.java
+docker/secrets/*.txt

@@ -7,6 +7,8 @@ services:
                 VERSION: "2.235-slim"        
                 # WINDOWS ONLY, we need to run root otherwise we cannot access 'host.docker.internal'
                 RUN_AS: "root"
+                ARG KUBECTL_VERSIO: "1.16.5-00"
+                DOCKER_CE_CLI_VERSION: "5:19.03.8~3-0~debian-buster"
         ports:
             # The jenkins web app
             - "${JENKINS_PORT}:8080"
@@ -23,11 +25,12 @@ services:
             - "JNLP_JENKIS_URL=${JNLP_JENKIS_URL}"
             - "JNLP_NEXUS_URL=${JNLP_NEXUS_URL}"
             - "RUN_AS=${RUN_AS}"
-            - "JENKINS_ADMIN_PASSWORD=${JENKINS_ADMIN_PASSWORD}"
             - "GITHUB_USERNAME=${GITHUB_USERNAME}"
-            - "GITHUB_ACCESS_TOKEN=${GITHUB_ACCESS_TOKEN}"
-            - "NEXUS_USER=admin"
-            - "NEXUS_PASSWORD=${ADMIN_NEXUS_PASSWORD}"
+            - "NEXUS_USERNAME=${NEXUS_USERNAME}"
+            - "DOCKER_HUB_USERNAME=${DOCKER_HUB_USERNAME}"
+            - "DOCKER_HUB_REGISTRY_REPOSITORY=${DOCKER_HUB_REGISTRY_REPOSITORY}"
+            - "KUBERNETES_URL=${KUBERNETES_URL}"
+            - "JENKINS_AGENT_IMAGE_TAG=${JENKINS_AGENT_IMAGE_TAG}"
         volumes:
             # The docker volume for persistence
             - jenkins-data:/var/jenkins_home
@@ -35,7 +38,22 @@ services:
             - ../jenkins-config/casc:/usr/share/jenkins/ref/config
             # Map logging configuration in container
             - ../jenkins-config/logging.properties:/usr/share/jenkins/ref/logging.properties:ro
+            # Map kubernetes configuration in container
+            - ../jenkins-config/kube-config.yml:/usr/share/jenkins/ref/kube-config.yml:ro
         privileged: true
+        # Inject defined and used secrets
+        secrets:
+            - nexusPassword
+            - jenkinsAdminPassword
+            - dockerHubPassword
+            - githubAccessToken
+            - kubeConfig
+        # The healthcheck for jenkins
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:8080"]
+            interval: 5s
+            timeout: 5s
+            retries: 5
     nexus:
         image: "sonatype/nexus3:3.23.0"
         ports:
@@ -44,6 +62,23 @@ services:
             - "INSTALL4J_ADD_VM_PARAMS=-Xms2g -Xmx2g -XX:MaxDirectMemorySize=2g"
         volumes:
             - "nexus-data:/nexus-data"
+        # The healthcheck for nexus
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:8081"]
+            interval: 5s
+            timeout: 5s
+            retries: 5
+secrets:
+    nexusPassword:
+        file: secrets/nexusPassword.txt
+    jenkinsAdminPassword:
+        file: secrets/jenkinsAdminPassword.txt
+    dockerHubPassword:
+        file: secrets/dockerHubPassword.txt
+    githubAccessToken:
+        file: secrets/githubAccessToken.txt
+    kubeConfig:
+        file: secrets/kubeConfig.txt
 volumes:
     jenkins-data:
     nexus-data:

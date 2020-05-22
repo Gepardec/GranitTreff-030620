@@ -1,0 +1,23 @@
+jenkins:
+    agentProtocols:
+        - "JNLP4-connect"
+        - "Ping"
+    slaveAgentPort: 50000
+    numExecutors: 5
+    scmCheckoutRetryCount: 2
+    mode: NORMAL
+    securityRealm:
+        local:
+          allowsSignup: false
+          users:
+            - id: "admin"
+              password: "${jenkinsAdminPassword}"
+    authorizationStrategy: loggedInUsersCanDoAnything
+unclassified: 
+    location:
+        url: "http://localhost:${JENKINS_PORT}"
+        adminAddress: "Jenkins <jenkins@localhost>"
+    buildTimestamp:
+        enableBuildTimestamp: true
+        pattern: "yyyy-MM-dd__HH-mm-ss"
+        timezone: "${TZ}"
