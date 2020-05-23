@@ -7,7 +7,7 @@ services:
                 VERSION: "2.235-slim"        
                 # WINDOWS ONLY, we need to run root otherwise we cannot access 'host.docker.internal'
                 RUN_AS: "root"
-                ARG KUBECTL_VERSIO: "1.16.5-00"
+                KUBECTL_VERSION: "1.16.5-00"
                 DOCKER_CE_CLI_VERSION: "5:19.03.8~3-0~debian-buster"
         ports:
             # The jenkins web app
@@ -22,7 +22,7 @@ services:
             - "JAVA_OPTS=-Djenkins.install.runSetupWizard=false -Djava.util.logging.config.file=/usr/share/jenkins/ref/logging.properties"
             # Used by jenkins CASC and docker-compose.yml
             - "DOCKER_HOST=${DOCKER_HOST_URI}"
-            - "JNLP_JENKIS_URL=${JNLP_JENKIS_URL}"
+            - "JNLP_JENKINS_URL=${JNLP_JENKINS_URL}"
             - "JNLP_NEXUS_URL=${JNLP_NEXUS_URL}"
             - "RUN_AS=${RUN_AS}"
             - "GITHUB_USERNAME=${GITHUB_USERNAME}"

@@ -10,7 +10,7 @@ jenkins:
                 - connector:
                     jnlp:
                         user: "root"
-                        jenkinsUrl: "${JNLP_JENKIS_URL}"
+                        jenkinsUrl: "${JNLP_JENKINS_URL}"
                         jnlpLauncher:
                             workDirSettings:
                                 disabled: false
