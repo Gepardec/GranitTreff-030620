@@ -1,0 +1,7 @@
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+networking:
+  # We need to use this addres otherwise we cannot reach it via the docker0 interface IP 
+  apiServerAddress: "0.0.0.0"
+  # We want a static port
+  apiServerPort: 6443

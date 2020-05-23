@@ -10,9 +10,10 @@ This repository provides a sample application which is build in Jenkins to illus
 
 == Technologies
 
-* link:https://git-scm.com/[Git 2.21.0.windows.1]
-* link:https://docs.docker.com/[Docker 19.03.8]
-* link:https://docs.docker.com/compose/[Docker Compose 1.25.4]
+* link:https://git-scm.com/[Git 2.xx.x]
+* link:https://docs.docker.com/[Docker 19.03.x]
+* link:https://docs.docker.com/compose/[Docker Compose 1.25.x]
+* link:https://kubernetes.io[Kubernetes 1.18.x]
 
 == Description
 
@@ -27,34 +28,61 @@ This repository holds the sample application and infrastructure used for illustr
 .Infrastructure
 image::./doc/infra.png[Infrastructure]
 
-== Prerequisites
+== Preparations
 
-=== Docker
+=== Windows Host
 
-Make sure you have configured Docker
+Install ``Docker Desktop for Windows`` as described link:https://hub.docker.com/editions/community/docker-ce-desktop-windows[here]. +
 
-* to be exposed on port ``2375``
-* and that your drive is shared (Docker for Windows only).
+Ensure that 
 
-=== Jenkins Agent
+* the daemon is exposed via ``tcp://localhost:2375``,
+* that the ``C`` drive is shared
+* and that ``Kubernetes`` is started.
 
-You need to build the jenkins agent image ``agent/Dockerfile`` which is based on ``jenkins/inbound-agent`` and installs Docker CLI and the Kubernetes CLI.
+IMPORTANT: ``Docker Desktop for Windows`` will create the Kubernetes configuration file ``~/.kube/config`` which you will need to provide as a secret file.
 
-=== Docker Compose 
+=== WSL 2 (Ubunut 20.04.LTS)
 
-==== Docker Secrets
+Install ``Docker`` as described link:https://docs.docker.com/engine/install/ubuntu/[here]. +
 
-Create the following secret files which are used in the ``docker/docker-compose.yml`` file. The content of the files is the secret value.
+IMPORTANT: WSL 2 instances are not managed by systemd and therefore mounts will not work and fail with the message ``cgroups: cannot find cgroup mount destination: unknown.``. Apply the temporary fix as described link:https://github.com/microsoft/WSL/issues/4189[here]
+
+.Temporary fix for the mount issue
+[source,bash]
+----
+sudo mkdir /sys/fs/cgroup/systemd
+sudo mount -t cgroup -o none,name=systemd cgroup /sys/fs/cgroup/systemd
+----
+
+Install ``kind`` as described link:https://kind.sigs.k8s.io/docs/user/quick-start/[here].
+
+.Install Kubernetes within Docker
+[source,bash]
+----
+# With a custom configuration to bind the api server to '0.0.0.0:6443'
+kind create cluster --config ../kind.yml
+----
+
+IMPORTANT: ``kind`` will install Kubernetes in Docker and create the Kubernetes configuration file ``~/.kube/config`` which you will need to provide as a secret file. 
+
+=== Configurations
+
+===== Secret Files
+
+Create the following secret files which are used in the link:docker/docker-compose.yml[docker/docker-compose.yml] file. The content of the files is the secret value.
 
 * ``docker/secrets/kubeConfig.txt`` +
-  The base64 encoded kubernetes config file
+  The base64 encoded Kubernetes config file. +
+  *Ensure that only the configuration of the intended cluster is contained*
 * ``docker/secrets/nexusPassword.txt`` +
-  The nexus password *Note, first you need to login and change the initial generated password*
+  The nexus password
 * ``docker/secrets/dockerHubPassword.txt`` +
-  The nexus administrator password
+  The Docker Hub password
 * ``docker/secrets/githubAccessToken.txt`` +
-  The github user access token
-* ``docker/secrets/jenkinsAdminPassword.txt``
+  The Github access token
+* ``docker/secrets/jenkinsAdminPassword.txt`` +
+  The Jenkins administrator password
 
 ==== Env File 
 
@@ -62,10 +90,10 @@ The following environment variables needs to be defined for docker-compose. The 
 
 * ``DOCKER_HOST_URI`` +
   The Docker Host URI in the form of ``tcp://<HOST>:<PORT>``
-* ``JNLP_JENKIS_URL`` +
-  The Jenkins URL used by the jnlp docker agent
+* ``JNLP_JENKINS_URL`` +
+  The Jenkins URL used by the jnlp docker agent in the form of ``http://<HOST>:<PORT>``
 * ``JNLP_NEXUS_URL`` +
-  The Nexus URL used by the builds within a jnlp docker agent
+  The Nexus URL used by the builds within a jnlp docker agent in the form of ``http://<HOST>:<PORT>``
 * ``RUN_AS`` +
   Defines with which use the jenkins container shall run. Either ``root`` or ``jenkins``
 * ``JENKINS_PORT`` +
@@ -73,33 +101,29 @@ The following environment variables needs to be defined for docker-compose. The 
 * ``GITHUB_USERNAME`` +
   Your github username
 * ``NEXUS_PORT`` +
-  the port Nexus shall be exposed to
+  The port Nexus shall be exposed to
 * ``DOCKER_HUB_REGISTRY_REPOSITORY`` +
-  The docker hub repository name
+  The docker Hub repository name
 * ``DOCKER_HUB_USERNAME`` +
-  The docker hub username
+  The docker Hub username
 * ``KUBERNETES_URL`` +
-  The api url of your kubernetes cluster
+  The api url of your Kubernetes cluster
 * ``JENKINS_AGENT_IMAGE_TAG`` +
-  The Docker Image Tag for the build ``agent/Dockerfile`` custom Jenkins agent image
+  Either you use by build ``cchet/jenkins-inbound-agent-custom:1.0`` available on Docker Hub or you build it yourself ``agent/Dockerfile`` and make it avialable to your Docker environment
 
-IMPORTANT: With Docker for Windows set the environment varibales to: + 
-``DOCKER_HOST_URI=tcp://hKUBERNETES_URLost.docker.internal:2375`` +
+IMPORTANT: With Docker Desktop for Windows set the environment varibales to: + 
+``DOCKER_HOST_URI=tcp://host.docker.internal:2375`` +
 ``RUN_AS=root`` +
 ``JNLP_JENKIS_URL=http://host.docker.internal:<JENKINS_PORT>`` +
 ``JNLP_NEXUS_URL=http://host.docker.internal:<NEXUS_PORT>`` +
 ``KUBERNETES_URL=https://kubernetes.docker.internal:6443`` +
-With a native Linux host set the environment varibales to: + 
+With WSL 2 set the environment varibales to: + 
 ``DOCKER_HOST_URI=tcp://<DOCKER0_IP>:2375`` +
 ``RUN_AS=jenkins`` +
 ``JNLP_JENKIS_URL=http://<DOCKER0_IP>:<JENKINS_PORT>`` + 
 ``JNLP_NEXUS_URL=http://<DOCKER0_IP>:<NEXUS_PORT>`` +
-``KUBERNETES_URL=https://<KUBERNETES_API_URL>:<KUBERNETES_API_PORT>`` +
-See link:https://stackoverflow.com/questions/31324981/how-to-access-host-port-from-docker-container[here] why +
-
-=== Kubernetes
-
-Ensure that you have an Kubernetes Cluster and a Kubernetes config file, which allows Jenkins to access the Kubernetes Cluster.  
+``KUBERNETES_URL=https://<DOCKER0_IP>:6443`` +
+See link:https://stackoverflow.com/questions/31324981/how-to-access-host-port-from-docker-container[here] why
 
 ==== Kubernetes Dashboard (Optional)
 
@@ -113,11 +137,13 @@ Ensure that you have an Kubernetes Cluster and a Kubernetes config file, which a
   `` kubectl describe secret kubernetes-dashboard-token-xxxxx  -n kubernetes-dashboard``
 . Go to ``localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/`` and login with the retrieved token
 
+IMPORTANT: If you start the Kubernetes Proxy from within a WSL 2 instance, then you need to add the parameter ``--address 0.0.0.0``, otherwise you won't be able to access it from the Windows host.
+
 == Setup
 
 . Go to ``./docker/``
 . Execute ``docker-compose build``
-. Execute ``docker-compose up``
+. Execute ``docker-compose up -d``
 . Execute ``docker-compose exec nexus cat /opt/sonatype/sonatype-work/nexus3/admin.password`` to get the generated admin password
 . Go to ``http://localhost:<NEXUS_PORT>``
 . Login with ``admin:<INITIAL_PASSWORD>``
@@ -125,7 +151,9 @@ Ensure that you have an Kubernetes Cluster and a Kubernetes config file, which a
 . Go to ``http://localhost:<JENKINS_PORT>``
 . Login with ``admin:<JENKINS_ADMIN_PASSWORD>``
 . Got to the build job and see how they went
-. Go to ``http://localhost:<NEXUS_PORT>/#browse/browse:maven-snapshots`` and see the pushed artifacts, which have a different version depending on the branch they have been build from
+. Go to ``http://localhost:<NEXUS_PORT>/#browse/browse`` and see the pushed snapshot/release artifacts, which have a different version depending on the branch they have been build from
+. Go to ``https://hub.docker.com/repository/docker/<DOCKER_HUB_REGISTRY_REPOSITORY>/microservice-quarkus`` and see the pushed images, which have a different tag depending on the branch they have been build from
+. Go to ``http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/`` and login with the Kubernetes Secret token and see if the deployments were successful.
 
 IMPORTANT: The first time your defined ``NEXUS_PASSWORD`` was most likely invalid,
            because you haven't changed it before the builds started. Just trigger all of the builds and it will work 
