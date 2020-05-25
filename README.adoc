@@ -30,6 +30,14 @@ image::./doc/infra.png[Infrastructure]
 
 == Preparations
 
+=== Docker Hub
+
+You will need a link:https://hub.docker.com/[Docker Hub] account, where the built Container Images are pushed during the builds.
+
+=== Github
+
+You will need a link:https://github.com/[Github] account and a link:https://help.github.com/en/enterprise/2.17/user/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line[personal access token] for your user, which is used to clone the repository.
+
 === Windows Host
 
 Install ``Docker Desktop for Windows`` as described link:https://hub.docker.com/editions/community/docker-ce-desktop-windows[here]. +
@@ -125,6 +133,15 @@ With WSL 2 set the environment varibales to: +
 ``KUBERNETES_URL=https://<DOCKER0_IP>:6443`` +
 See link:https://stackoverflow.com/questions/31324981/how-to-access-host-port-from-docker-container[here] why
 
+Example configuration files are located at link:doc/examples/[doc/examples/]. 
+
+* link:doc/examples/.wsl-linux-env[Environment settings  WSL - Linux] +
+  The ``.env`` file for WSL 2 and Linux environments
+* link:doc/examples/.docker-desktop-env[Environment settings Docker Desktop for Windows] +
+  The ``.env`` file for Windows environments
+* link:doc/examples/kubeConfig.yml[Kubernetes Config] +
+  The Kubernetes Configuration file
+  
 ==== Kubernetes Dashboard (Optional)
 
 . Install the dashboard +
@@ -155,5 +172,4 @@ IMPORTANT: If you start the Kubernetes Proxy from within a WSL 2 instance, then 
 . Go to ``https://hub.docker.com/repository/docker/<DOCKER_HUB_REGISTRY_REPOSITORY>/microservice-quarkus`` and see the pushed images, which have a different tag depending on the branch they have been build from
 . Go to ``http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/`` and login with the Kubernetes Secret token and see if the deployments were successful.
 
-IMPORTANT: The first time your defined ``NEXUS_PASSWORD`` was most likely invalid,
-           because you haven't changed it before the builds started. Just trigger all of the builds and it will work 
+IMPORTANT: The first time your defined ``NEXUS_PASSWORD`` was most likely invalid, because you haven't changed it before the builds started. Just trigger all of the builds and it will work 
