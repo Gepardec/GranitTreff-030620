@@ -1,4 +1,4 @@
-.env
+docker/.env
 kube-config.yml
 *.iml
 target/
