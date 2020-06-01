@@ -46,7 +46,7 @@ IMPORTANT: ``Docker Desktop for Windows`` will create the Kubernetes configurati
 
 Install ``Docker`` as described link:https://docs.docker.com/engine/install/ubuntu/[here]. +
 
-IMPORTANT: WSL 2 instances are not managed by systemd and therefore mounts will not work and fail with the message ``cgroups: cannot find cgroup mount destination: unknown.``. Apply the temporary fix as described link:https://github.com/microsoft/WSL/issues/4189[here]
+IMPORTANT: If you start a docker container and get the error message ``cgroups: cannot find cgroup mount destination: unknown.``. Apply the temporary fix as described link:https://github.com/microsoft/WSL/issues/4189[here]
 
 .Temporary fix for the mount issue
 [source,bash]
@@ -62,6 +62,23 @@ Install ``kind`` as described link:https://kind.sigs.k8s.io/docs/user/quick-star
 ----
 # With a custom configuration to bind the api server to '0.0.0.0:6443'
 kind create cluster --config ../kind.yml
+----
+
+IMPORTANT: ``kind`` will install Kubernetes in Docker and create the Kubernetes configuration file ``~/.kube/config`` which you will need to provide as a secret file. 
+
+=== WSL 2 (DEbian 10.x)
+
+Install ``Docker`` as described link:https://docs.docker.com/engine/install/debian/[here], or use my link:https://github.com/cchet/wsl2-setup[ansible bundle] for setting up a Debian WSL2 instane.
+
+Install ``kind`` as described link:https://kind.sigs.k8s.io/docs/user/quick-start/[here].
+
+TIP: The ansible bundle will already install kind and fix the systemd mount issue for you
+
+.Temporary fix for the mount issue
+[source,bash]
+----
+sudo mkdir /sys/fs/cgroup/systemd
+sudo mount -t cgroup -o none,name=systemd cgroup /sys/fs/cgroup/systemd
 ----
 
 IMPORTANT: ``kind`` will install Kubernetes in Docker and create the Kubernetes configuration file ``~/.kube/config`` which you will need to provide as a secret file. 

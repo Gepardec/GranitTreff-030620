@@ -52,6 +52,7 @@ services:
             interval: 5s
             timeout: 5s
             retries: 5
+        network_mode: bridge
     nexus:
         image: "sonatype/nexus3:3.23.0"
         ports:
@@ -66,6 +67,7 @@ services:
             interval: 5s
             timeout: 5s
             retries: 5
+        network_mode: bridge
 secrets:
     nexusPassword:
         file: secrets/nexusPassword.txt
