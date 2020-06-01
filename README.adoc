@@ -74,7 +74,7 @@ kind create cluster --config ../kind.yml
 
 IMPORTANT: ``kind`` will install Kubernetes in Docker and create the Kubernetes configuration file ``~/.kube/config`` which you will need to provide as a secret file. 
 
-=== WSL 2 (DEbian 10.x)
+=== WSL 2 (Debian 10.x)
 
 Install ``Docker`` as described link:https://docs.docker.com/engine/install/debian/[here], or use my link:https://github.com/cchet/wsl2-setup[ansible bundle] for setting up a Debian WSL2 instane.
 
@@ -87,6 +87,13 @@ TIP: The ansible bundle will already install kind and fix the systemd mount issu
 ----
 sudo mkdir /sys/fs/cgroup/systemd
 sudo mount -t cgroup -o none,name=systemd cgroup /sys/fs/cgroup/systemd
+----
+
+.Install Kubernetes within Docker
+[source,bash]
+----
+# With a custom configuration to bind the api server to '0.0.0.0:6443'
+kind create cluster --config ../kind.yml
 ----
 
 IMPORTANT: ``kind`` will install Kubernetes in Docker and create the Kubernetes configuration file ``~/.kube/config`` which you will need to provide as a secret file. 
