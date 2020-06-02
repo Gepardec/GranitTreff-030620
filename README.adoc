@@ -2,7 +2,7 @@
 
 This repository holds the sample application and CI/CD infrastructure definition for illustrating Git in Software Development.
 
-// TODO: Add presentation ro repository and link it here
+link:./doc/Git_in_Software_Development.pdf[Slides]
 
 == Description
 
