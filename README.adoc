@@ -1,23 +1,26 @@
 = Git in Software Development
 
-This repository holds the sample application for illustrating Git in Software Development.
+This repository holds the sample application and CI/CD infrastructure definition for illustrating Git in Software Development.
 
 // TODO: Add presentation ro repository and link it here
 
 == Description
 
-This repository provides a sample application which is build in Jenkins to illustrate the relation of Git Branches, Versions and CI/CD. 
+This repository provides a sample application which is build on the CI/CD infrastructure to illustrate the relation of Git Branches, Versions and CI/CD.
 
 == Technologies
 
 * link:https://git-scm.com/[Git 2.xx.x]
-* link:https://docs.docker.com/[Docker 19.03.x]
+* link:https://docs.docker.com/[Docker 19.x.x]
 * link:https://docs.docker.com/compose/[Docker Compose 1.25.x]
 * link:https://kubernetes.io[Kubernetes 1.18.x]
+* link:https://docs.microsoft.com/en-us/windows/wsl/wsl2-index[Microsoft WSL2]
+* link:https://hub.docker.com/editions/community/docker-ce-desktop-windows[Docker Desktop for Windows]
 
 == Description
 
-This repository holds the sample application and infrastructure used for illustrating the relation of Git Branches, Versions and CI/CD in action. The infrastructure consists of the following services and platforms.
+This repository holds the sample application and CI/CD infrastructure definition used for illustrating the relation of Git Branches, Versions and CI/CD in action.
+The infrastructure consists of the following services and platforms.
 
 * Docker
 * Kubernetes
@@ -25,24 +28,23 @@ This repository holds the sample application and infrastructure used for illustr
 * Jenkins Docker JNLP Agent
 * Nexus Repsoitory Manager
 
-.Infrastructure
+.CI/CD Infrastructure
 image::./doc/infra.png[Infrastructure]
 
 == Preparations
 
 === Docker Hub
 
-You will need a link:https://hub.docker.com/[Docker Hub] account, where the built Container Images are pushed during the builds.
+You will need a link:https://hub.docker.com/[Docker Hub] account where the built Container Images are pushed to during the builds.
 
 === Github
 
-You will need a link:https://github.com/[Github] account and a link:https://help.github.com/en/enterprise/2.17/user/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line[personal access token] for your user, which is used to clone the repository.
+You will need a link:https://github.com/[Github] account and a link:https://help.github.com/en/enterprise/2.17/user/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line[personal access token]
+for your user which is used to clone the repository.
 
 === Windows Host
 
-Install ``Docker Desktop for Windows`` as described link:https://hub.docker.com/editions/community/docker-ce-desktop-windows[here]. +
-
-Ensure that 
+Install link:https://hub.docker.com/editions/community/docker-ce-desktop-windows[Docker Desktop for Windows] and ensure that +
 
 * the daemon is exposed via ``tcp://localhost:2375``,
 * that the ``C`` drive is shared
@@ -50,11 +52,12 @@ Ensure that
 
 IMPORTANT: ``Docker Desktop for Windows`` will create the Kubernetes configuration file ``~/.kube/config`` which you will need to provide as a secret file.
 
-=== WSL 2 (Ubunut 20.04.LTS)
+=== WSL 2 (Ubuntu 20.04.LTS or Debian 10.x)
 
 Install ``Docker`` as described link:https://docs.docker.com/engine/install/ubuntu/[here]. +
 
-IMPORTANT: If you start a docker container and get the error message ``cgroups: cannot find cgroup mount destination: unknown.``. Apply the temporary fix as described link:https://github.com/microsoft/WSL/issues/4189[here]
+IMPORTANT: If you start a docker container and get the error message ``cgroups: cannot find cgroup mount destination: unknown.``.
+Apply the temporary fix as described link:https://github.com/microsoft/WSL/issues/4189[here]
 
 .Temporary fix for the mount issue
 [source,bash]
@@ -65,38 +68,18 @@ sudo mount -t cgroup -o none,name=systemd cgroup /sys/fs/cgroup/systemd
 
 Install ``kind`` as described link:https://kind.sigs.k8s.io/docs/user/quick-start/[here].
 
-.Install Kubernetes within Docker
+.Create a Kubernetes within Docker
 [source,bash]
 ----
 # With a custom configuration to bind the api server to '0.0.0.0:6443'
-kind create cluster --config ../kind.yml
+kind create cluster --config ./kind.yml
 ----
 
-IMPORTANT: ``kind`` will install Kubernetes in Docker and create the Kubernetes configuration file ``~/.kube/config`` which you will need to provide as a secret file. 
+IMPORTANT: ``kind`` will install Kubernetes in Docker and create the Kubernetes configuration file ``~/.kube/config`` which you will need to provide as a secret file.
+           Be aware that the config file will define the ``server`` as ``https://0.0.0.0:6443`` whereby you will have to change the IP to the Docker Gateway IP.
 
-=== WSL 2 (Debian 10.x)
-
-Install ``Docker`` as described link:https://docs.docker.com/engine/install/debian/[here], or use my link:https://github.com/cchet/wsl2-setup[ansible bundle] for setting up a Debian WSL2 instane.
-
-Install ``kind`` as described link:https://kind.sigs.k8s.io/docs/user/quick-start/[here].
-
-TIP: The ansible bundle will already install kind and fix the systemd mount issue for you
-
-.Temporary fix for the mount issue
-[source,bash]
-----
-sudo mkdir /sys/fs/cgroup/systemd
-sudo mount -t cgroup -o none,name=systemd cgroup /sys/fs/cgroup/systemd
-----
-
-.Install Kubernetes within Docker
-[source,bash]
-----
-# With a custom configuration to bind the api server to '0.0.0.0:6443'
-kind create cluster --config ../kind.yml
-----
-
-IMPORTANT: ``kind`` will install Kubernetes in Docker and create the Kubernetes configuration file ``~/.kube/config`` which you will need to provide as a secret file. 
+TIP: I have implemented an link:https://github.com/cchet/wsl2-setup[Ansible bundle] for setting up my WSL2 instance which you can use to setup a Debian WSL2 distro.
+     The bundle will already take case about the systemd mount issue for you.
 
 === Configurations
 
@@ -106,13 +89,13 @@ Create the following secret files which are used in the link:docker/docker-compo
 
 * ``docker/secrets/kubeConfig.txt`` +
   The base64 encoded Kubernetes config file. +
-  *Ensure that only the configuration of the intended cluster is contained*
+  *Ensure that only the configuration of the intended cluster is contained and the server address is properly set*
 * ``docker/secrets/nexusPassword.txt`` +
   The nexus password
 * ``docker/secrets/dockerHubPassword.txt`` +
-  The Docker Hub password
+  The Docker Hub password of your user
 * ``docker/secrets/githubAccessToken.txt`` +
-  The Github access token
+  The Github personal access token of your user
 * ``docker/secrets/jenkinsAdminPassword.txt`` +
   The Jenkins administrator password
 
@@ -141,7 +124,8 @@ The following environment variables needs to be defined for docker-compose. The 
 * ``KUBERNETES_URL`` +
   The api url of your Kubernetes cluster
 * ``JENKINS_AGENT_IMAGE_TAG`` +
-  Either you use by build ``cchet/jenkins-inbound-agent-custom:1.0`` available on Docker Hub or you build it yourself ``agent/Dockerfile`` and make it avialable to your Docker environment
+  Either you use my build ``cchet/jenkins-inbound-agent-custom:1.0`` available on Docker Hub or you build it yourself (``agent/Dockerfile``) and make it available
+  to your Docker environment
 
 IMPORTANT: With Docker Desktop for Windows set the environment varibales to: + 
 ``DOCKER_HOST_URI=tcp://host.docker.internal:2375`` +
@@ -149,13 +133,14 @@ IMPORTANT: With Docker Desktop for Windows set the environment varibales to: +
 ``JNLP_JENKIS_URL=http://host.docker.internal:<JENKINS_PORT>`` +
 ``JNLP_NEXUS_URL=http://host.docker.internal:<NEXUS_PORT>`` +
 ``KUBERNETES_URL=https://kubernetes.docker.internal:6443`` +
-With WSL 2 set the environment varibales to: + 
-``DOCKER_HOST_URI=tcp://<DOCKER0_IP>:2375`` +
+With WSL2 or with a native Linux OS set the environment variables to: +
+``DOCKER_HOST_URI=tcp://<DOCKER_GATEWAY_IP>:2375`` +
 ``RUN_AS=jenkins`` +
-``JNLP_JENKIS_URL=http://<DOCKER0_IP>:<JENKINS_PORT>`` + 
-``JNLP_NEXUS_URL=http://<DOCKER0_IP>:<NEXUS_PORT>`` +
-``KUBERNETES_URL=https://<DOCKER0_IP>:6443`` +
-See link:https://stackoverflow.com/questions/31324981/how-to-access-host-port-from-docker-container[here] why
+``JNLP_JENKIS_URL=http://<DOCKER_GATEWAY_IP>:<JENKINS_PORT>`` +
+``JNLP_NEXUS_URL=http://<DOCKER_GATEWAY_IP>:<NEXUS_PORT>`` +
+``KUBERNETES_URL=https://<DOCKER_GATEWAY_IP>:6443`` +
+See link:https://stackoverflow.com/questions/31324981/how-to-access-host-port-from-docker-container[here] why. +
+You can retrieve the ``DOCKER_GATEWAY_IP`` via ``docker network inspect bridge``
 
 Example configuration files are located at link:doc/examples/[doc/examples/]. 
 
